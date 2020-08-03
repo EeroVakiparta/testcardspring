@@ -1,0 +1,19 @@
+spring:
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driverClassName: org.postgresql.Driver
+
+jwt:
+  SECRET: "SECRET"
+  DURATION : 100000
+  HEADER_STRING : "Authorization"
+  AUTH_URL :  "/users/auth"
+  TOKEN_PREFIX : "Bearer "
