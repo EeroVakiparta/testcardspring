@@ -3,10 +3,7 @@ package com.cardapp.card.game.service.impl;
 import com.cardapp.card.entity.Card;
 import com.cardapp.card.exception.ServiceException;
 import com.cardapp.card.exception.constant.ErrorCodeEnum;
-import com.cardapp.card.game.dto.CardCreateDto;
-import com.cardapp.card.game.dto.CardListResponseDto;
-import com.cardapp.card.game.dto.CardResponse;
-import com.cardapp.card.game.dto.PointDto;
+import com.cardapp.card.game.dto.*;
 import com.cardapp.card.game.repository.CardRepository;
 import com.cardapp.card.security.repository.UserRepository;
 import com.cardapp.card.security.repository.entity.User;
@@ -15,12 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.security.Principal;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ArueGameServiceImpl implements ArueGameService{
@@ -47,13 +42,52 @@ public class ArueGameServiceImpl implements ArueGameService{
     }
 
     @Override
-    public ResponseEntity<CardListResponseDto> getRandomCards(int number) {
+    public ResponseEntity<CardListResponseDto> getRandomCards(final FilteredCardRequestDto dto) {
+            if(dto.isEmpty()){
+                final List<Card> cardList = cardRepository.getRandomCards();
+                final List<CardResponse> cardResponseList = new LinkedList<>();
+                for (Card card : cardList) {
+                    cardResponseList.add(modelMapper.map(card, CardResponse.class));
+                }
+                final CardListResponseDto cardListResponseDto = new CardListResponseDto();
+                cardListResponseDto.setCards(cardResponseList);
+                return new ResponseEntity(cardListResponseDto, HttpStatus.OK);
+
+            }
+            if(dto.getToRemove().size() == 0) {
+                final CardListResponseDto cardListResponseDto = new CardListResponseDto();
+                cardListResponseDto.setCards(new ArrayList<>());
+                return new ResponseEntity<>(cardListResponseDto, HttpStatus.OK);
+            }
+            final List<Card> cards = cardRepository.findAll();
+            final List<Card> filteredCards = new ArrayList<>();
+            for (final Card card : cards){
+                boolean cardRemove = false;
+                for (int i = 0; i < dto.getToRemove().size(); i++) {
+                    if(dto.getToRemove().get(i).compareTo(card.getId())==0)
+                        cardRemove = true;
+                }
+                if(cardRemove)
+                    continue;
+                filteredCards.add(card);
+            }
+            Collections.shuffle(filteredCards);
+            final List<CardResponse> cardResponses = new ArrayList<>();
+        for (int i = 0; i < 4 - dto.getToRemove().size(); i++) {
+            cardResponses.add(modelMapper.map(filteredCards.get(i),CardResponse.class));
+        }
+        final CardListResponseDto cardListResponseDto = new CardListResponseDto();
+        cardListResponseDto.setCards(cardResponses);
+        return new ResponseEntity(cardListResponseDto,HttpStatus.OK);
+    }
+
+    public ResponseEntity<CardListResponseDto> getFourRandomCards(){
         final List<Card> cardList = cardRepository.getRandomCards();
         final List<CardResponse> cardResponseList = new LinkedList<>();
-        for(Card card : cardList){
-            cardResponseList.add(modelMapper.map(card,CardResponse.class));
+        for (Card card : cardList) {
+            cardResponseList.add(modelMapper.map(card, CardResponse.class));
         }
-        return new ResponseEntity(cardResponseList,HttpStatus.OK);
+        return new ResponseEntity(cardResponseList, HttpStatus.OK);
     }
 
     @Override

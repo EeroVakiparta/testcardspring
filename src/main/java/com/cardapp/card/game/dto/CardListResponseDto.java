@@ -10,4 +10,5 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CardListResponseDto {
     List<CardResponse> cards;
+
 }

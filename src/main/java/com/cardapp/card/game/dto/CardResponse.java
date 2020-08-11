@@ -7,6 +7,9 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CardResponse {
+
+     String id;
+
      String name;
 
      Integer value;
